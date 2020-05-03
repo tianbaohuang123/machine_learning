@@ -1,8 +1,14 @@
 from sklearn.preprocessing import MinMaxScaler
 from sklearn.preprocessing import StandardScaler
-from sklearn.impute import SimpleImputer, KNNImputer
+from sklearn.impute import SimpleImputer
 import numpy as np
 
+"""
+特征值处理：
+1.归一化：MinMaxScaler
+2.标准化：StandardScaler
+3.缺失值处理：SimpleImputer
+"""
 
 def min_max_scaler():
     """

@@ -5,6 +5,14 @@ from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.feature_extraction.text import TfidfVectorizer
 import jieba
 
+"""
+特征值抽取：
+1.字典：DictVectorizer
+2.文本：CountVectorizer
+3.中文：CountVectorizer，jieba
+4.重要程度：TfidfVectorizer
+"""
+
 def dict_vec():
     """
     字典数据抽取

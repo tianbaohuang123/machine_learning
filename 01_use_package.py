@@ -1,4 +1,4 @@
-# 特征抽取
+# 特征抽取demo
 # 导入包
 from sklearn.feature_extraction.text import CountVectorizer
 
