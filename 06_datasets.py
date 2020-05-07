@@ -1,10 +1,14 @@
 from sklearn.datasets import load_iris,load_digits,load_boston,load_diabetes
 from sklearn.datasets import fetch_20newsgroups
-from sklearn.model_selection import train_test_split
+from sklearn.model_selection import train_test_split, GridSearchCV
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.preprocessing import StandardScaler
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.naive_bayes import MultinomialNB
+from sklearn.metrics import classification_report
+from sklearn.feature_extraction import DictVectorizer
+from sklearn.tree import DecisionTreeClassifier, export_graphviz
+from sklearn.ensemble import RandomForestClassifier
 import pandas as pd
 
 def show_iris():
@@ -179,18 +183,32 @@ def knncls():
     x_test = std.transform(x_test)
 
     # 进行算法流程
-    knn = KNeighborsClassifier(n_neighbors=5)
+    # knn = KNeighborsClassifier(n_neighbors=5)
+    knn = KNeighborsClassifier()
 
-    # fit, pridict, score
-    knn.fit(x_train, y_train)
+    # # fit, pridict, score
+    # knn.fit(x_train, y_train)
+    #
+    # # 得出预测结果
+    # y_predict = knn.predict(x_test)
+    #
+    # print("预测的目标签到位置为：y_predict", y_predict)
+    #
+    # # 得出准确率
+    # print("预测的准确率：", knn.score(x_test, y_test))
 
-    # 得出预测结果
-    y_predict = knn.predict(x_test)
+    # 进行网格搜索
 
-    print("预测的目标签到位置为：y_predict", y_predict)
+    # 构造一些参数的值进行搜索
+    params = {"n_neighbors": [3,5,10]}
+    gc = GridSearchCV(knn, param_grid=params, cv=2)
+    gc.fit(x_train, y_train)
 
-    # 得出准确率
-    print("预测的准确率：", knn.score(x_test, y_test))
+    # 预测准去率
+    print("在测试集上准确率：", gc.score(x_test, y_test))
+    print("在交叉验证当中最好的结果：", gc.best_score_)
+    print("在交叉验证当中最好的模型：", gc.best_estimator_)
+    print("每个超参数每次交叉验证的结果：", gc, gc.cv_results_)
 
     return None
 
@@ -229,6 +247,62 @@ def naviebayes():
 
     print("准确率为：", mlt.score(x_test, y_test))
 
+    # 测试混淆矩阵API，在这里没什么意义
+    print("每个类别的精确率和召回率：",classification_report(y_test, y_predict, target_names=news.target_names))
+
+
+def decision():
+    """
+    决策树对泰坦尼克号进行预测生死
+    :return: None
+    """
+
+    # 读取数据
+    titanic = pd.read_csv("http://biostat.mc.vanderbilt.edu/wiki/pub/Main/DataSets/titanic.txt")
+
+    # 处理数据，找出特征值和目标值，处理缺失值
+    x = titanic[['pclass', 'age', 'sex']]
+
+    y = titanic['survived']
+
+    x['age'].fillna(x['age'].mean(), inplace=True)
+
+    # 分割数据集到训练集和测试集
+    x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=0.25)
+
+    # 进行处理（特征工程）特征 -》 类别 -》 one-hot编码
+    # pd转换字典：to_dict(orient='records')
+    dict = DictVectorizer(sparse=False)
+
+    x_train = dict.fit_transform(x_train.to_dict(orient='records'))
+
+    print(dict.get_feature_names())
+
+    x_test = dict.transform(x_test.to_dict(orient='records'))
+
+    # # 用决策树进行预测
+    # dec = DecisionTreeClassifier(max_depth=5)
+    #
+    # dec.fit(x_train, y_train)
+    #
+    # # 预测准确率
+    # print("预测的准确率：", dec.score(x_test, y_test))
+    #
+    # # 导出决策树的结构
+    # export_graphviz(dec, out_file="./tree.dot", feature_names=['年龄', 'pclass=1st', 'pclass=2nd', 'pclass=3rd', '女性', '男性'])
+
+    # 随机森林进行预测
+    rf = RandomForestClassifier()
+
+    # 超参数调优
+    # 网格搜索与交叉验证
+    params = {"n_estimators":[120, 200, 300, 500, 800, 1200],
+             "max_depth": [5, 8, 15, 25, 30]}
+    gc = GridSearchCV(rf, param_grid=params, cv=2)
+    gc.fit(x_train, y_train)
+    print("准确率：", gc.score(x_test, y_test))
+    print("查看选择的参数模型：", gc.best_params_)
+
 if __name__ == '__main__':
     # 数据集API
     # show_iris()
@@ -244,8 +318,11 @@ if __name__ == '__main__':
     # show_boston()
     # show_diabetes()
 
-    # K-近邻算法
+    # K-近邻算法 + 网格搜索
     # knncls()
 
-    # 朴素贝叶斯算法
-    naviebayes()
+    # 朴素贝叶斯算法 + 混淆矩阵使用示例
+    # naviebayes()
+
+    # 决策树
+    decision()
