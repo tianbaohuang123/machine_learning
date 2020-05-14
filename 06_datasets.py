@@ -243,7 +243,7 @@ def naviebayes():
 
     y_predict = mlt.predict(x_test)
 
-    print("预测的目标签到位置为：y_predict", y_predict)
+    print("预测的结果为：y_predict", y_predict)
 
     print("准确率为：", mlt.score(x_test, y_test))
 
